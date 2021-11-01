@@ -10,9 +10,17 @@ Rest Shell Commander (RSC) is a small java application built on spring boot. It 
 
 **URL:** /users/signup
 
-**Method:** Get
+**Method:** POST
 
 This service allows new users to register themselves in the database in order to generate JWT token, required for secured APIs e.g. search.
+
+### Sample Request
+````
+{
+    "username":"username",
+    "password":"password"
+}
+````
 
 ## Users
 **URL:** /users/all
