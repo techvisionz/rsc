@@ -16,13 +16,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tz.rsc.utils.Utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	private AuthenticationManager authenticationManager;
-	int tokenValidityMs = 1200000;
+	int tokenValidityMs = 60000 * 60 * 24 ; // 24 hours
 
 	public AuthenticationFilter(AuthenticationManager authenticationManager) {
 		this.authenticationManager = authenticationManager;
@@ -36,17 +37,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 		try {
 			com.tz.rsc.entities.User creds = new ObjectMapper().readValue(request.getInputStream(), com.tz.rsc.entities.User.class);			
 			
-			System.out.println("Authenticatting.... " + creds.getUsername() + " = " + creds.getPassword());
+			//System.out.println("Authenticatting.... " + creds.getUsername() + " = " + creds.getPassword());
 			
-			Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getUsername(), creds.getPassword(),new ArrayList<>()));
+			Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getUsername(), creds.getPassword(),new ArrayList<>()));			
 			
 			return auth;
 		} catch (IOException e) {
-			System.out.println("Failed.... ");
-			throw new RuntimeException("Could not read request" + e);
+			System.out.println("Failed.... " + e.getMessage());
+			//throw new RuntimeException("Could not read request" + e);
+			return null;
 		} catch (Exception e) {
 			System.out.println("Failed.... " + e.getMessage());
-			throw new RuntimeException("Could not read request" + e);
+			//throw new RuntimeException("Could not read request" + e);
+			return null;
 		}
 	}
 
@@ -55,7 +58,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 			FilterChain filterChain, Authentication authentication) {
 		String token = Jwts.builder().setSubject(((User) authentication.getPrincipal()).getUsername())
 				.setExpiration(new Date(System.currentTimeMillis() + tokenValidityMs))
-				.signWith(SignatureAlgorithm.HS256, "SecretKeyToGenJWTs".getBytes()).compact();
+				.signWith(SignatureAlgorithm.HS256, Utils.JWT_KEY.getBytes()).compact();
 		response.addHeader("Authorization", "Bearer " + token);
 	}
 }

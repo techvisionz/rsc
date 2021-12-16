@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -25,7 +24,7 @@ public class ServiceInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public ServiceInfo() {
-		this.serviceHosts=new ArrayList<String>();
+		this.nodesInfo=new ArrayList<NodeInfo>();
 	}
 
 	@Id
@@ -39,19 +38,10 @@ public class ServiceInfo implements Serializable {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ElementCollection // 1
-    @CollectionTable(name = "hosts", joinColumns = @JoinColumn(name = "id")) // 2
-    @Column(name = "serviceHosts") // 3
-    private List<String> serviceHosts;
-    
-	@Column(name = "logPath")
-	private String logPath;
-	
-	@Column(name = "archiveLogPath")
-	private String archiveLogPath;
-	
-	@Column(name = "logFileName")
-	private String logFileName;
+    @ManyToMany(
+            cascade = CascadeType.MERGE
+        )
+    private List<NodeInfo> nodesInfo;    
 
 	public long getId() {
 		return id;
@@ -77,39 +67,26 @@ public class ServiceInfo implements Serializable {
 		this.user = user;
 	}
 
-	public List<String> getServiceHosts() {
-		return serviceHosts;
-	}
-
-	public void setServiceHosts(List<String> serviceHosts) {
-		this.serviceHosts = serviceHosts;
-	}
-
-	public String getLogPath() {
-		return logPath;
-	}
-
-	public void setLogPath(String logPath) {
-		this.logPath = logPath;
-	}
-
-	public String getArchiveLogPath() {
-		return archiveLogPath;
-	}
-
-	public void setArchiveLogPath(String archiveLogPath) {
-		this.archiveLogPath = archiveLogPath;
-	}
-
-	public String getLogFileName() {
-		return logFileName;
-	}
-
-	public void setLogFileName(String logFileName) {
-		this.logFileName = logFileName;
-	}
-
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public List<NodeInfo> getNodesInfo() {
+		return nodesInfo;
+	}
+
+	public void setNodesInfo(List<NodeInfo> nodesInfo) {
+		this.nodesInfo = nodesInfo;
+	}
+	
+	public NodeInfo getNodeInfoById(long id) {
+		for (NodeInfo nodeInfo : nodesInfo) {
+			System.out.println(nodeInfo.getId());
+			if(nodeInfo.getId() == id) {
+				return nodeInfo;
+			}
+		}
+		
+		return null;
 	}
 }

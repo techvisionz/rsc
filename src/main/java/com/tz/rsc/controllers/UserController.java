@@ -14,7 +14,7 @@ import com.tz.rsc.repository.UserRepository;
 
 @RestController
 
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/rsc/api/users")
 
 public class UserController
 {

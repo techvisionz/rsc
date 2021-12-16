@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tz.rsc.entities.ShellCommand;
@@ -13,7 +14,8 @@ import com.tz.rsc.entities.ShellCommandResult;
 import com.tz.rsc.utils.Utils;
 
 @RestController
-public class RestShellController {
+@RequestMapping("/rsc/api")
+public class RestShellController {	
 
 	@PostMapping("/search")
 	ShellCommandResult search(@RequestBody ShellCommand command) {
@@ -21,8 +23,7 @@ public class RestShellController {
 		ShellCommandResult result = new ShellCommandResult();
 		StringBuffer data = new StringBuffer();
 		String cmd="";	
-	
-		
+			
 		Runtime run = Runtime.getRuntime();
 		Process pr;
 		try {			
@@ -32,7 +33,9 @@ public class RestShellController {
 				return result;
 			}			
 			
-			cmd = Utils.prepareCommand(command);		
+			// Log path
+			
+			cmd = Utils.prepareCommand(command, false);		
 			
 			System.out.println("Executing .... [" + cmd + "]");
 			pr = run.exec(new String[] { "sh", "-c", cmd });
@@ -43,6 +46,22 @@ public class RestShellController {
 				data.append(line);
 				data.append(System.getProperty("line.separator"));
 			}
+			
+			// Archive Log path
+			
+			if(command.searchInArchive) {
+				cmd = Utils.prepareCommand(command, true);		
+				
+				System.out.println("Executing .... [" + cmd + "]");
+				pr = run.exec(new String[] { "sh", "-c", cmd });
+				pr.waitFor(command.timeoutSeconds, TimeUnit.SECONDS);
+				buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+				line = "";
+				while ((line = buf.readLine()) != null) {
+					data.append(line);
+					data.append(System.getProperty("line.separator"));
+				}	
+			}		
 
 		} catch (Exception e) {
 			e.printStackTrace();

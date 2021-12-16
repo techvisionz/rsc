@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,12 +32,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 		httpSecurity.csrf().disable().cors()
 		.and().headers().frameOptions()
 		.disable().addHeaderWriter(new StaticHeadersWriter("X-FRAME-OPTIONS", "SAMEORIGIN"))
+		 .and()
+		 .logout().clearAuthentication(true).logoutRequestMatcher(new AntPathRequestMatcher("/logout")) 
+         .logoutSuccessUrl("/healthCheck") 
+         .deleteCookies("JSESSIONID")
+         .invalidateHttpSession(true)
 		.and().authorizeRequests().antMatchers(HttpMethod.POST,"/login").permitAll()
+		.and().authorizeRequests().antMatchers(HttpMethod.POST,"/rsc/api/users/signup").permitAll()
 		.and().addFilter(new AuthenticationFilter(authenticationManager()))
 		.addFilter(new AuthorizationFilter(authenticationManager()))
 		 .authorizeRequests().antMatchers(HttpMethod.POST, "/search")
-		 .authenticated().antMatchers(HttpMethod.POST, "/services/**")
-		 .authenticated().antMatchers(HttpMethod.GET, "/services/**")
+		 .authenticated().antMatchers(HttpMethod.POST, "/rsc/**")
+		 .authenticated().antMatchers(HttpMethod.GET, "/rsc/**")
 		 .authenticated();
 	}
 	
